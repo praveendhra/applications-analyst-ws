@@ -50,17 +50,20 @@ body {
   border-bottom: 1px solid rgba(255,255,255,.1);
   margin-bottom: 12px;
 }
+#sidebar .s-logo strong {
+  display: block;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -.01em;
+  margin-bottom: 5px;
+}
 #sidebar .s-logo span {
   display: block;
   font-size: 12px;
   color: var(--teal-300);
-  text-transform: uppercase;
-  letter-spacing: .08em;
-  margin-bottom: 4px;
-}
-#sidebar .s-logo strong {
-  color: #fff;
-  font-size: 15px;
+  letter-spacing: .01em;
+  line-height: 1.4;
 }
 #sidebar nav a {
   display: block;
@@ -103,6 +106,14 @@ body {
   background: linear-gradient(135deg, var(--teal-900) 0%, var(--teal-700) 60%, var(--teal-500) 100%);
   color: #fff;
   padding: 56px 48px 48px;
+}
+#hero .byline {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--teal-300);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  margin-bottom: 10px;
 }
 #hero h1 { font-size: clamp(24px, 3vw, 38px); font-weight: 700; letter-spacing: -.02em; }
 #hero .subtitle {
@@ -489,8 +500,8 @@ p strong { color: var(--text); }
 <!-- ══ SIDEBAR ══ -->
 <aside id="sidebar">
   <div class="s-logo">
-    <span>Work Sample</span>
     <strong>Praveendhra Rajkumar</strong>
+    <span>Report Writer &middot; BMCHS Work Sample</span>
   </div>
   <nav>
     <div class="s-label">Overview</div>
@@ -524,6 +535,7 @@ p strong { color: var(--text); }
 
   <!-- HERO -->
   <div id="hero">
+    <div class="byline">Praveendhra Rajkumar</div>
     <h1>Clinical Reporting Maturity for Community Health Alliance</h1>
     <div class="subtitle">Report Writer / Applications Developer, BMCHS Clinical &amp; Enterprise Analytics</div>
     <div class="tag-row">
