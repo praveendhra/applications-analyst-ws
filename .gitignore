@@ -1,0 +1,4 @@
+# Exclude resume PDF from commits (contains personal info — do not publish)
+*.pdf
+__pycache__/
+*.pyc

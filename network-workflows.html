@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
+<title>Visual Workflows, Clinical Reporting | Praveendhra Rajkumar</title>
+<style>
+:root {
+  --teal-900: #0d3331;
+  --teal-700: #0e6655;
+  --teal-500: #14967a;
+  --teal-300: #4ecba8;
+  --teal-100: #d0f5ec;
+  --teal-50:  #f0fdf8;
+  --dark:     #0a2826;
+  --text:     #1a2e2c;
+  --muted:    #4a6360;
+  --border:   #c5e8e0;
+  --white:    #ffffff;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--teal-50);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* HEADER */
+.page-header {
+  background: linear-gradient(135deg, var(--teal-900) 0%, var(--teal-700) 100%);
+  color: #fff;
+  padding: 28px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.page-header h1 { font-size: 20px; font-weight: 700; }
+.page-header .sub { font-size: 13px; color: var(--teal-100); margin-top: 4px; }
+.back-link {
+  color: var(--teal-300);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid var(--teal-300);
+  padding: 6px 14px;
+  border-radius: 6px;
+  transition: background .15s;
+}
+.back-link:hover { background: rgba(78,203,168,.15); }
+
+/* TABS */
+.tab-bar {
+  background: var(--teal-900);
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  border-bottom: 2px solid var(--teal-700);
+}
+.tab-btn {
+  padding: 12px 22px;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255,255,255,.55);
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all .18s;
+  position: relative;
+  top: 2px;
+}
+.tab-btn:hover { color: var(--teal-300); }
+.tab-btn.active { color: var(--teal-300); border-bottom-color: var(--teal-300); }
+
+/* PANELS */
+.tab-panel { display: none; padding: 40px; }
+.tab-panel.active { display: block; }
+
+.panel-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--teal-900);
+  margin-bottom: 8px;
+}
+.panel-desc {
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 32px;
+  line-height: 1.6;
+  max-width: 720px;
+}
+
+/* ─── FLOW DIAGRAM ─── */
+.flow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+/* Node */
+.n {
+  border-radius: 10px;
+  padding: 14px 22px;
+  text-align: center;
+  min-width: 220px;
+  max-width: 320px;
+  border: 2px solid transparent;
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+  position: relative;
+}
+.n-title { font-size: 14px; font-weight: 700; line-height: 1.3; }
+.n-sub   { font-size: 12px; margin-top: 4px; opacity: .85; line-height: 1.4; }
+
+/* Node variants */
+.n-start  { background: var(--teal-900); border-color: var(--teal-700); color: #fff; }
+.n-end    { background: var(--teal-700); border-color: var(--teal-500); color: #fff; }
+.n-proc   { background: #fff; border-color: var(--border); color: var(--text); }
+.n-dec    { background: #fffbe6; border-color: #e6c84a; color: #5a4500; }
+.n-ok     { background: #e8f8f2; border-color: var(--teal-300); color: var(--teal-900); }
+.n-err    { background: #fde8e8; border-color: #e87070; color: #6b1a1a; }
+.n-info   { background: #f0f4ff; border-color: #9ab0e8; color: #1a2550; }
+.n-teal   { background: var(--teal-100); border-color: var(--teal-500); color: var(--teal-900); }
+
+/* Connector */
+.conn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 36px;
+  position: relative;
+}
+.conn-line {
+  width: 2px;
+  flex: 1;
+  background: var(--teal-300);
+  position: relative;
+  overflow: hidden;
+}
+.conn-line::after {
+  content: '';
+  position: absolute;
+  top: -100%;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, transparent 0%, var(--teal-300) 50%, transparent 100%);
+  animation: flow-down 1.2s linear infinite;
+}
+@keyframes flow-down { to { top: 100%; } }
+.conn-head {
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 8px solid var(--teal-300);
+}
+.conn.short { height: 24px; }
+.conn.label-conn {
+  flex-direction: row;
+  height: auto;
+  width: 100%;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  margin: 0;
+}
+.conn-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--muted);
+  background: var(--teal-50);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+/* Branch layout */
+.branch-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+.split-bar {
+  height: 2px;
+  background: var(--teal-300);
+  width: var(--bar-w, 80%);
+  margin: 0 auto;
+}
+.merge-bar {
+  height: 2px;
+  background: var(--teal-300);
+  width: var(--bar-w, 80%);
+  margin: 0 auto;
+}
+.branches {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+.branch-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+/* Side label for decision branches */
+.branch-lbl {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  margin: 4px 0;
+}
+
+/* Annotation */
+.annotation {
+  background: var(--teal-50);
+  border: 1px dashed var(--teal-300);
+  border-radius: 8px;
+  padding: 12px 18px;
+  max-width: 680px;
+  width: 100%;
+  margin: 16px 0;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.annotation strong { color: var(--teal-700); }
+
+/* Legend */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+.leg-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.leg-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 2px solid;
+}
+
+@media (max-width: 600px) {
+  .tab-panel { padding: 20px; }
+  .page-header { padding: 20px; }
+  .branches { flex-direction: column; align-items: center; }
+  .split-bar, .merge-bar { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div>
+    <h1>Visual Workflows, Clinical Reporting</h1>
+    <div class="sub">Praveendhra Rajkumar &nbsp;|&nbsp; Report Writer /Applications Developer Work Sample</div>
+  </div>
+  <a href="index.html" class="back-link">&larr; Back to Work Sample</a>
+</div>
+
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="showTab('tab-dev')">Report Development Lifecycle</button>
+  <button class="tab-btn" onclick="showTab('tab-validation')">Data Validation Flow</button>
+  <button class="tab-btn" onclick="showTab('tab-intake')">Request &amp; Change Management</button>
+  <button class="tab-btn" onclick="showTab('tab-rca')">Incident Response + RCA</button>
+  <button class="tab-btn" onclick="showTab('tab-automation')">Automated Report Distribution</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     TAB 1: REPORT DEVELOPMENT LIFECYCLE
+════════════════════════════════════════════════ -->
+<div id="tab-dev" class="tab-panel active">
+  <div class="panel-title">Epic Report Development Lifecycle</div>
+  <div class="panel-desc">End-to-end flow from a clinical department's data question to a validated, deployed Reporting Workbench template or Slicer Dicer data model, including stakeholder checkpoints that prevent scope creep and rework.</div>
+
+  <div class="legend">
+    <div class="leg-item"><div class="leg-dot" style="background:var(--teal-900);border-color:var(--teal-700);"></div> Trigger</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#fff;border-color:var(--border);"></div> Process step</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#fffbe6;border-color:#e6c84a;"></div> Decision</div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--teal-100);border-color:var(--teal-500);"></div> Milestone / sign-off</div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--teal-700);border-color:var(--teal-500);"></div> Completion</div>
+  </div>
+
+  <div class="flow">
+    <div class="n n-start">
+      <div class="n-title">Clinical Department Request</div>
+      <div class="n-sub">Submitted via ServiceNow intake form: business question, urgency, site, recipients</div>
+    </div>
+    <div class="conn"><div class="conn-line"></div><div class="conn-head"></div></div>
+
+    <div class="n n-proc">
+      <div class="n-title">Analyst Triage (Day 1-2)</div>
+      <div class="n-sub">Classify: Standard, New Build, Self-Service Redirect, or Defer. Set delivery date.</div>
+    </div>
+    <div class="conn"><div class="conn-line"></div><div class="conn-head"></div></div>
+
+    <div class="n n-dec">
+      <div class="n-title">Can Slicer Dicer answer this?</div>
+      <div class="n-sub">Is this a routine ad-hoc lookup that a curated data model can handle?</div>
+    </div>
+    <div class="conn short"><div class="conn-line"></div><div class="conn-head"></div></div>
+
+    <div class="branch-wrap">
+      <div class="split-bar" style="--bar-w:70%;"></div>
+      <div class="branches" style="width:70%;margin:0 auto;">
+        <div class="branch-col">
+          <div class="conn short"><div class="conn-line"></div><div class="conn-head"></div></div>
+          <div class="branch-lbl">Yes</div>
+          <div class="n n-ok">
+            <div class="n-title">Route to Slicer Dicer</div>
+            <div class="n-sub">Provide saved filter or train super-user. Log as deflected request.</div>
+          </div>
+          <div class="conn short"><div class="conn-line"></div><div class="conn-head"></div></div>
+          <div class="n n-end" style="min-width:160px;">
+            <div class="n-title">Self-Service Resolution</div>
+          </div>
+        </div>
+        <div class="branch-col">
+          <div class="conn short"><div class="conn-line"></div><div class="conn-head"></div></div>
+          <div class="branch-lbl">No</div>
+          <div class="n n-proc">
+            <div class="n-title">Spec Meeting (Day 3-5)</div>
+            <div class="n-sub">Define filters, date anchor, groupers, output format, CC site scope, and recipients</div>
+          </div>
+          <div class="conn short"><div class="conn-line"></div><div class="conn-head"></div></div>
+          <div class="n n-teal">
+            <div class="n-title">Written Spec Sign-off</div>
+            <div class="n-sub">Requester approves spec document before development begins</div>
+          </div>
+          <div class="conn short"><div class="conn-line"></div><div class="conn-head"></div></div>
+          <div class="n n-proc">
+            <div class="n-title">Build in Reporting Workbench</div>
+            <div class="n-sub">Select master file (INI), add criteria filters, configure groupers, set output columns</div>
+          </div>
+          <div class="conn short"><div class="conn-line"></div><div class="conn-head"></div></div>
+          <div class="n n-proc">
+            <div class="n-title">3-Step QA Validation</div>
+            <div class="n-sub">Spec check, cross-reference against source, edge-case testing</div>
+          </div>
+          <div class="conn short"><div class="conn-line"></div><div class="conn-head"></div></div>
+          <div class="n n-teal">
+            <div class="n-title">Requester UAT Sign-off</div>
+            <div class="n-sub">Department validates output against known data before go-live</div>
+          </div>
+          <div class="conn short"><div class="conn-line"></div><div class="conn-head"></div></div>
+          <div class="n n-proc">
+            <div class="n-title">Deploy to Shared Template Folder</div>
+            <div class="n-sub">Add to report registry: ID, Chronicles sources, spec sheet, retention schedule</div>
+          </div>
+          <div class="conn short"><div class="conn-line"></div><div class="conn-head"></div></div>
+          <div class="n n-end" style="min-width:180px;">
+            <div class="n-title">Report Live + Documented</div>
+          </div>
+        </div>
+      </div>
+      <div class="merge-bar" style="--bar-w:70%;"></div>
+    </div>
+
+    <div class="conn"><div class="conn-line"></div><div class="conn-head"></div></div>
+    <div class="annotation">
+      <strong>Note:</strong> For recurring reports, the deployed template is also registered with Report Broker for scheduled automated delivery. The spec sheet includes the delivery schedule, recipients, and SFTP/SharePoint destination path.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     TAB 2: DATA VALIDATION
+════════════════════════════════════════════════ -->
+<div id="tab-validation" class="tab-panel">
+  <div class="panel-title">Data Validation Flow</div>
+  <div class="panel-desc">Three-step QA gate that every Reporting Workbench output must pass before delivery. Designed to catch filter errors, date anchor mismatches, and Community Connect data bleed before they reach clinical decision-makers.</div>
+
+  <div class="legend">
+    <div class="leg-item"><div class="leg-dot" style="background:var(--teal-900);border-color:var(--teal-700);"></div> Trigger / start</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#fff;border-color:var(--border);"></div> Process step</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#fffbe6;border-color:#e6c84a;"></div> Decision point</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#e8f8f2;border-color:var(--teal-300);"></div> Success / pass</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#fde8e8;border-color:#e87070;"></div> Failure / error</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#f0f4ff;border-color:#9ab0e8;"></div> Info / log</div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--teal-100);border-color:var(--teal-500);"></div> Milestone / sign-off</div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--teal-700);border-color:var(--teal-500);"></div> Completion</div>
+  </div>
+
+  <div class="flow">
+    <div class="n n-start">
+      <div class="n-title">Report Build Complete</div>
+      <div class="n-sub">Reporting Workbench template saved. Ready for validation.</div>
+    </div>
+    <div class="conn"><div class="conn-line"></div><div class="conn-head"></div></div>
+
+    <div class="n n-proc">
+      <div class="n-title">Step 1: Spec Validation</div>
+      <div class="n-sub">Compare output to manually verified source records for 20-50 patients. Verify denominator matches expected population.</div>
+    </div>
+    <div class="conn"><div class="conn-line"></div><div class="conn-head"></div></div>
+
+    <div class="n n-dec">
+      <div class="n-title">Denominator matches spec?</div>
+    </div>
+    <div class="conn short"><div class="conn-line"></div><div class="conn-head"></div></div>
+
+    <div class="branch-wrap">
+      <div class="split-bar" style="--bar-w:65%;"></div>
+      <div class="branches" style="width:65%;margin:0 auto;">
+        <div class="branch-col">
+          <div class="conn short"><div class="conn-line"></div><div class="conn-head"></div></div>
+          <div class="branch-lbl">No</div>
+          <div class="n n-err">
+            <div class="n-title">Audit Criteria Filters</div>
+            <div class="n-sub">Check date anchor, Department ID filter, and value list definitions. Revise template.</div>
+          </div>
+          <div class="conn short"><div class="conn-line"></div><div class="conn-head"></div></div>
+          <div class="n n-info">
+            <div class="n-title">Return to Build</div>
+            <div class="n-sub">Fix identified filter issue. Re-run from Step 1.</div>
+          </div>
+        </div>
+        <div class="branch-col">
+          <div class="conn short"><div class="conn-line"></div><div class="conn-head"></div></div>
+          <div class="branch-lbl">Yes</div>
+          <div class="n n-ok">
+            <div class="n-title">Step 1 Passed</div>
+          </div>
+          <div class="conn short"><div class="conn-line"></div><div class="conn-head"></div></div>
+
+          <div class="n n-proc">
+            <div class="n-title">Step 2: Cross-Reference Check</div>
+            <div class="n-sub">Run the same population through an independent source (legacy report or direct Chronicles lookup). Compare counts.</div>
+          </div>
+          <div class="conn short"><div class="conn-line"></div><div class="conn-head"></div></div>
+
+          <div class="n n-dec">
+            <div class="n-title">Variance under 0.5%?</div>
+          </div>
+          <div class="conn short"><div class="conn-line"></div><div class="conn-head"></div></div>
+
+          <div class="n n-ok">
+            <div class="n-title">Step 2 Passed</div>
+          </div>
+          <div class="conn short"><div class="conn-line"></div><div class="conn-head"></div></div>
+
+          <div class="n n-proc">
+            <div class="n-title">Step 3: Edge-Case Testing</div>
+            <div class="n-sub">Run at go-live date boundary and 1-day window. Verify CC site filter excludes host-site records.</div>
+          </div>
+          <div class="conn short"><div class="conn-line"></div><div class="conn-head"></div></div>
+
+          <div class="n n-dec">
+            <div class="n-title">All edge cases clean?</div>
+          </div>
+          <div class="conn short"><div class="conn-line"></div><div class="conn-head"></div></div>
+
+          <div class="n n-teal">
+            <div class="n-title">Validation Complete</div>
+            <div class="n-sub">QA checklist signed. Proceed to requester UAT.</div>
+          </div>
+        </div>
+      </div>
+      <div class="merge-bar" style="--bar-w:65%;"></div>
+    </div>
+
+    <div class="conn"><div class="conn-line"></div><div class="conn-head"></div></div>
+    <div class="n n-end">
+      <div class="n-title">Report Cleared for Delivery</div>
+      <div class="n-sub">Template deployed + spec documentation archived in SharePoint registry</div>
+    </div>
+
+    <div class="annotation" style="margin-top:20px;">
+      <strong>Python QA script</strong> runs after every automated Report Broker job: counts rows in output CSV, compares to prior-month baseline, flags deviations over 15%, and logs results to SharePoint tracking sheet. Catches truncated files and missed filter conditions before reports reach clinical leaders.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     TAB 3: REQUEST AND CHANGE MANAGEMENT
+════════════════════════════════════════════════ -->
+<div id="tab-intake" class="tab-panel">
+  <div class="panel-title">Request and Change Management Lifecycle</div>
+  <div class="panel-desc">How a report request travels from department submission through prioritization, development, and production deployment, with explicit stakeholder checkpoints that prevent scope creep and ensure delivery commitments are met.</div>
+
+  <div class="legend">
+    <div class="leg-item"><div class="leg-dot" style="background:var(--teal-900);border-color:var(--teal-700);"></div> Trigger / start</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#fff;border-color:var(--border);"></div> Process step</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#fffbe6;border-color:#e6c84a;"></div> Decision point</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#e8f8f2;border-color:var(--teal-300);"></div> Success / redirect</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#f0f4ff;border-color:#9ab0e8;"></div> Info / deferred</div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--teal-100);border-color:var(--teal-500);"></div> Milestone / sign-off</div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--teal-700);border-color:var(--teal-500);"></div> Completion</div>
+  </div>
+
+  <div class="flow">
+    <div class="n n-start">
+      <div class="n-title">Request Submitted</div>
+      <div class="n-sub">ServiceNow form: department, site, business question, urgency, frequency, intended recipients</div>
+    </div>
+    <div class="conn"><div class="conn-line"></div><div class="conn-head"></div></div>
+
+    <div class="n n-proc">
+      <div class="n-title">Auto-Acknowledgment (Same Day)</div>
+      <div class="n-sub">Requester receives confirmation email with ticket number and expected triage window (2 business days)</div>
+    </div>
+    <div class="conn"><div class="conn-line"></div><div class="conn-head"></div></div>
+
+    <div class="n n-proc">
+      <div class="n-title">Analyst Triage (Day 1-2)</div>
+      <div class="n-sub">Classify request type. Estimate effort. Assign to analyst. Set committed delivery date.</div>
+    </div>
+    <div class="conn"><div class="conn-line"></div><div class="conn-head"></div></div>
+
+    <div class="n n-dec">
+      <div class="n-title">Request type?</div>
+    </div>
+    <div class="conn short"><div class="conn-line"></div><div class="conn-head"></div></div>
+
+    <div class="branch-wrap">
+      <div class="split-bar" style="--bar-w:90%;"></div>
+      <div class="branches" style="width:90%;margin:0 auto;">
+
+        <div class="branch-col">
+          <div class="conn short"><div class="conn-line"></div><div class="conn-head"></div></div>
+          <div class="branch-lbl">Self-Service</div>
+          <div class="n n-ok">
+            <div class="n-title">Redirect to Slicer Dicer</div>
+            <div class="n-sub">Send guide + offer training. Log deflection. Close ticket.</div>
+          </div>
+        </div>
+
+        <div class="branch-col">
+          <div class="conn short"><div class="conn-line"></div><div class="conn-head"></div></div>
+          <div class="branch-lbl">Standard</div>
+          <div class="n n-proc">
+            <div class="n-title">Configure Existing Template</div>
+            <div class="n-sub">Apply site filters, adjust date range, validate output. Deliver.</div>
+          </div>
+        </div>
+
+        <div class="branch-col">
+          <div class="conn short"><div class="conn-line"></div><div class="conn-head"></div></div>
+          <div class="branch-lbl">New Build</div>
+          <div class="n n-proc">
+            <div class="n-title">Spec Meeting Scheduled</div>
+            <div class="n-sub">Define filters, date anchor, groupers, PHI scope, CC site, recipients</div>
+          </div>
+          <div class="conn short"><div class="conn-line"></div><div class="conn-head"></div></div>
+          <div class="n n-teal">
+            <div class="n-title">Written Spec Sign-off</div>
+          </div>
+          <div class="conn short"><div class="conn-line"></div><div class="conn-head"></div></div>
+          <div class="n n-proc">
+            <div class="n-title">Build + QA</div>
+            <div class="n-sub">3-step validation. Get approval before UAT.</div>
+          </div>
+          <div class="conn short"><div class="conn-line"></div><div class="conn-head"></div></div>
+          <div class="n n-teal">
+            <div class="n-title">UAT Sign-off</div>
+          </div>
+        </div>
+
+        <div class="branch-col">
+          <div class="conn short"><div class="conn-line"></div><div class="conn-head"></div></div>
+          <div class="branch-lbl">Defer</div>
+          <div class="n n-info">
+            <div class="n-title">Defer with Explanation</div>
+            <div class="n-sub">Communicate timeline, constraints, or re-prioritization rationale to requester</div>
+          </div>
+        </div>
+
+      </div>
+      <div class="merge-bar" style="--bar-w:90%;"></div>
+    </div>
+
+    <div class="conn"><div class="conn-line"></div><div class="conn-head"></div></div>
+    <div class="n n-proc">
+      <div class="n-title">Deploy to Production</div>
+      <div class="n-sub">Template added to shared folder. Registered in SharePoint report registry. Recurring reports configured in Report Broker.</div>
+    </div>
+    <div class="conn"><div class="conn-line"></div><div class="conn-head"></div></div>
+    <div class="n n-end">
+      <div class="n-title">Ticket Closed + Documented</div>
+      <div class="n-sub">Requester receives delivery confirmation. Spec sheet and Chronicles source archived.</div>
+    </div>
+
+    <div class="annotation" style="margin-top:20px;">
+      <strong>21-day alert:</strong> Any open ticket without an update after 21 days triggers an automated alert to the assigned analyst and the analytics manager. Prevents unacknowledged requests from aging silently.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     TAB 4: INCIDENT RESPONSE + RCA
+════════════════════════════════════════════════ -->
+<div id="tab-rca" class="tab-panel">
+  <div class="panel-title">Incident Response + Root Cause Analysis</div>
+  <div class="panel-desc">Detection-to-resolution flow for the ED throughput metric discrepancy, a 12% variance across three Radar dashboards caused by inconsistent date anchors. This flow generalizes to any data quality incident in the reporting environment.</div>
+
+  <div class="legend">
+    <div class="leg-item"><div class="leg-dot" style="background:#fde8e8;border-color:#e87070;"></div> Anomaly / failure detected</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#fff;border-color:var(--border);"></div> Investigation / process step</div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--teal-100);border-color:var(--teal-500);"></div> Key finding / callout</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#e8f8f2;border-color:var(--teal-300);"></div> Stakeholder sign-off</div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--teal-700);border-color:var(--teal-500);"></div> Incident closed</div>
+  </div>
+
+  <div class="flow">
+    <div class="n n-err">
+      <div class="n-title">Anomaly Detected</div>
+      <div class="n-sub">QI director flags 12% ED visit count variance between two Radar dashboards for the same month and similar-volume sites</div>
+    </div>
+    <div class="conn"><div class="conn-line"></div><div class="conn-head"></div></div>
+
+    <div class="n n-proc">
+      <div class="n-title">Scope the Incident</div>
+      <div class="n-sub">How many dashboards affected? Which date range? Which sites? How many patients impacted?</div>
+    </div>
+    <div class="conn"><div class="conn-line"></div><div class="conn-head"></div></div>
+
+    <div class="n n-teal">
+      <div class="n-title">Finding: 3 dashboards, 2 months of data, 214 affected encounters</div>
+      <div class="n-sub">Variance = encounters that opened in late June and closed in early July (month-boundary straddle)</div>
+    </div>
+    <div class="conn"><div class="conn-line"></div><div class="conn-head"></div></div>
+
+    <div class="n n-proc">
+      <div class="n-title">Retrieve Underlying Template IDs</div>
+      <div class="n-sub">Pull template IDs from each Radar component configuration. Open in Reporting Workbench.</div>
+    </div>
+    <div class="conn"><div class="conn-line"></div><div class="conn-head"></div></div>
+
+    <div class="n n-proc">
+      <div class="n-title">Side-by-Side Criteria Comparison</div>
+      <div class="n-sub">Compare all filter definitions across 3 templates. Look for field ID differences in date criteria.</div>
+    </div>
+    <div class="conn"><div class="conn-line"></div><div class="conn-head"></div></div>
+
+    <div class="n n-err">
+      <div class="n-title">Root Cause Identified</div>
+      <div class="n-sub">Dashboard A: PAT ENC 12060 (Arrival DT). Dashboard B: PAT ENC 18520 (Close DT). Dashboard C: HAR field (Check-in DT). Three different anchors, three different counts.</div>
+    </div>
+    <div class="conn"><div class="conn-line"></div><div class="conn-head"></div></div>
+
+    <div class="n n-proc">
+      <div class="n-title">Confirm Fix with Clinical Stakeholder</div>
+      <div class="n-sub">Confirm with ED informatics lead that Arrival DT (PAT ENC 12060) is the clinically correct anchor for operational throughput metrics</div>
+    </div>
+    <div class="conn"><div class="conn-line"></div><div class="conn-head"></div></div>
+
+    <div class="n n-proc">
+      <div class="n-title">Apply Fix to All 3 Templates</div>
+      <div class="n-sub">Update date anchor to PAT ENC 12060 across all 3 RWB templates. Add description field annotation documenting the standard.</div>
+    </div>
+    <div class="conn"><div class="conn-line"></div><div class="conn-head"></div></div>
+
+    <div class="n n-proc">
+      <div class="n-title">Validate and Deploy</div>
+      <div class="n-sub">Re-run 3-step QA. Confirm metrics align within 0.1% residual variance. Deploy updated templates.</div>
+    </div>
+    <div class="conn"><div class="conn-line"></div><div class="conn-head"></div></div>
+
+    <div class="n n-ok">
+      <div class="n-title">Stakeholder Communication Sent</div>
+      <div class="n-sub">Written summary to QI team: what happened, why, what changed, and confirmation that historical data was not altered. QI director sign-off within 48 hours.</div>
+    </div>
+    <div class="conn"><div class="conn-line"></div><div class="conn-head"></div></div>
+
+    <div class="n n-teal">
+      <div class="n-title">Prevention Measures Added</div>
+      <div class="n-sub">"Date anchor field" added as required column in all future spec documentation. Cross-reference validation added to QA checklist for all new builds.</div>
+    </div>
+    <div class="conn"><div class="conn-line"></div><div class="conn-head"></div></div>
+
+    <div class="n n-end">
+      <div class="n-title">Incident Closed</div>
+      <div class="n-sub">Total resolution time: 48 hours from detection to stakeholder sign-off</div>
+    </div>
+
+    <div class="annotation" style="margin-top:20px;">
+      <strong>Timeline:</strong> Anomaly reported Monday AM. Root cause confirmed Monday PM (4 hours). Fix deployed Tuesday AM. Stakeholder confirmation Tuesday PM. Spec template updated Wednesday. Total elapsed: 48 hours.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     TAB 5: AUTOMATED DISTRIBUTION
+════════════════════════════════════════════════ -->
+<div id="tab-automation" class="tab-panel">
+  <div class="panel-title">Automated Report Distribution</div>
+  <div class="panel-desc">How recurring reports flow from Epic Report Broker through the validation layer to secure delivery, replacing 18 hours of monthly manual analyst effort with a fully automated, audited pipeline.</div>
+
+  <div class="legend">
+    <div class="leg-item"><div class="leg-dot" style="background:var(--teal-900);border-color:var(--teal-700);"></div> Trigger / start</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#fff;border-color:var(--border);"></div> Process step</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#fffbe6;border-color:#e6c84a;"></div> Decision point</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#e8f8f2;border-color:var(--teal-300);"></div> Validation passed</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#fde8e8;border-color:#e87070;"></div> Failure / alert</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#f0f4ff;border-color:#9ab0e8;"></div> Manual fallback step</div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--teal-100);border-color:var(--teal-500);"></div> Analyst review gate</div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--teal-700);border-color:var(--teal-500);"></div> Completion</div>
+  </div>
+
+  <div class="flow">
+    <div class="n n-start">
+      <div class="n-title">Report Broker Trigger</div>
+      <div class="n-sub">Scheduled job fires on the 1st of each month at 06:00 AM. Targets all 8 HEDIS quality report templates.</div>
+    </div>
+    <div class="conn"><div class="conn-line"></div><div class="conn-head"></div></div>
+
+    <div class="n n-proc">
+      <div class="n-title">Reporting Workbench Templates Execute</div>
+      <div class="n-sub">Epic runs each template against Chronicles. Applies date range, site filters, and CC Department ID restrictions.</div>
+    </div>
+    <div class="conn"><div class="conn-line"></div><div class="conn-head"></div></div>
+
+    <div class="n n-dec">
+      <div class="n-title">All templates completed successfully?</div>
+    </div>
+    <div class="conn short"><div class="conn-line"></div><div class="conn-head"></div></div>
+
+    <div class="branch-wrap">
+      <div class="split-bar" style="--bar-w:65%;"></div>
+      <div class="branches" style="width:65%;margin:0 auto;">
+        <div class="branch-col">
+          <div class="conn short"><div class="conn-line"></div><div class="conn-head"></div></div>
+          <div class="branch-lbl">No</div>
+          <div class="n n-err">
+            <div class="n-title">Failure Alert Sent</div>
+            <div class="n-sub">Report Broker emails analytics-team with template name, error code, and timestamp</div>
+          </div>
+          <div class="conn short"><div class="conn-line"></div><div class="conn-head"></div></div>
+          <div class="n n-proc">
+            <div class="n-title">Analyst Investigation</div>
+            <div class="n-sub">Check Epic system status, template configuration, and Chronicle connection. Escalate to Epic technical team if needed.</div>
+          </div>
+          <div class="conn short"><div class="conn-line"></div><div class="conn-head"></div></div>
+          <div class="n n-info">
+            <div class="n-title">Manual Re-run After Fix</div>
+          </div>
+        </div>
+
+        <div class="branch-col">
+          <div class="conn short"><div class="conn-line"></div><div class="conn-head"></div></div>
+          <div class="branch-lbl">Yes</div>
+          <div class="n n-proc">
+            <div class="n-title">Output Written to SFTP / SharePoint</div>
+            <div class="n-sub">CSV files saved to secure landing zone. Filename includes measure code, YYYYMM, and row count: <code>DM-20260501-4821.csv</code></div>
+          </div>
+          <div class="conn short"><div class="conn-line"></div><div class="conn-head"></div></div>
+
+          <div class="n n-proc">
+            <div class="n-title">Python QA Script Runs</div>
+            <div class="n-sub">Counts rows in each output file. Compares to prior-month baseline. Flags deviations over 15%. Logs to SharePoint tracking row.</div>
+          </div>
+          <div class="conn short"><div class="conn-line"></div><div class="conn-head"></div></div>
+
+          <div class="n n-dec">
+            <div class="n-title">All row counts within 15% of baseline?</div>
+          </div>
+          <div class="conn short"><div class="conn-line"></div><div class="conn-head"></div></div>
+
+          <div class="n n-ok">
+            <div class="n-title">Validation Passed</div>
+          </div>
+          <div class="conn short"><div class="conn-line"></div><div class="conn-head"></div></div>
+
+          <div class="n n-proc">
+            <div class="n-title">Delivery Notification Sent</div>
+            <div class="n-sub">QI coordinator and analytics manager receive email with links to reports, run timestamp, and row counts</div>
+          </div>
+          <div class="conn short"><div class="conn-line"></div><div class="conn-head"></div></div>
+
+          <div class="n n-teal">
+            <div class="n-title">Analyst Reviews Exceptions Only</div>
+            <div class="n-sub">If QA flagged any deviation: analyst investigates before QI team uses the data. Target: under 30 minutes of analyst time per month.</div>
+          </div>
+        </div>
+      </div>
+      <div class="merge-bar" style="--bar-w:65%;"></div>
+    </div>
+
+    <div class="conn"><div class="conn-line"></div><div class="conn-head"></div></div>
+    <div class="n n-end">
+      <div class="n-title">Monthly Reports Delivered</div>
+      <div class="n-sub">All 8 HEDIS quality reports available in SharePoint by the 2nd of each month. Analyst manual time: 18 hrs reduced to &lt;30 min exception review.</div>
+    </div>
+
+    <div class="annotation" style="margin-top:20px;">
+      <strong>Secondary automation:</strong> A Radar burst report emails daily ED throughput summaries (visit counts, door-to-provider time by site) to ED medical directors each morning at 7 AM, no analyst involvement after initial configuration.
+    </div>
+  </div>
+</div>
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+</script>
+</body>
+</html>
